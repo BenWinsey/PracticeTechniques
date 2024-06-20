@@ -1,0 +1,44 @@
+create or replace table TIL_PLAYGROUND.TEMP.BENCOPY2023WK123 as
+
+
+
+with recursiveCTE as (
+select
+CAST(row_num1 AS INTEGER) AS row_num1,
+coalesce(year, 1) as year,
+CAST(date as STRING) as date,
+bank_holiday,
+row_number() over (partition by row_num1 order by row_num1) as row_number
+from TIL_PLAYGROUND.TEMP.BENCOPY2023WK123
+),
+
+-- A recursive CTE. This runs down the list of values for each customer, checking the Value column, if it is null it gets the previous non NULL value
+
+cleancust as (
+select
+row_num1,
+coalesce(year, ) as year,
+CAST(date as STRING) as date,
+bank_holiday,
+row_number() over (partition by row_num1 order by row_num1) as row_number
+from recursiveCTE
+where row_number = 1
+
+union all
+
+select
+A.row_num1,
+A.year,
+A.date,
+A.bank_holiday,
+A.row_number
+from recursiveCTE as A
+inner join cleancust as B on A.row_num1 = B.row_num1
+and A.row_number = B.row_number + 1)
+
+
+select *
+from cleancust;
+
+select * from TIL_PLAYGROUND.TEMP.BENCOPY2023WK123
+order by row_num1
